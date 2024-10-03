@@ -1,25 +1,10 @@
-import java.util.ArrayList;
-
-class LightningSegment {
-  color col;
-  int startX;
-  int startY;
-  int endX;
-  int endY;
-  boolean isFading; // Flag to check if the segment is fading
-
-  LightningSegment(color col, int startX, int startY, int endX, int endY) {
-    this.col = col;
-    this.startX = startX;
-    this.startY = startY;
-    this.endX = endX;
-    this.endY = endY;
-    this.isFading = true; // Start with fading effect
-  }
-}
-
-ArrayList<LightningSegment> lightningSegments = new ArrayList<>();
-int lightningLength = 10; // Maximum length of each segment
+int startX = 0;
+int startY = 150;
+int endX = 0;
+int endY = 150;
+int[][] lightningSegments = new int[100][5]; // Store segments: {startX, startY, endX, endY, color}
+int segmentCount = 0;
+int fadeAmount = 5; // Amount to fade the color
 
 void setup() {
   size(800, 400);         // Set the size of the window
@@ -29,46 +14,116 @@ void setup() {
 
 void draw() {
   // Clear the previous frame slightly
-  fill(0, 10); // Fill with black, but slightly transparent
+  fill(0, 10); // Slightly transparent fill to create a fade effect
   noStroke();
-  rect(0, 0, width, height); // Cover the entire window to create a fade effect
+  rect(0, 0, width, height); // Cover the entire window
 
   // Draw all lightning segments
-  for (LightningSegment segment : lightningSegments) {
-    stroke(segment.col);
-    line(segment.startX, segment.startY, segment.endX, segment.endY);
+  for (int i = 0; i < segmentCount; i++) {
+    int[] segment = lightningSegments[i];
     
-    // Fade the color of the segment
-    if (segment.isFading) {
-      segment.col = color(max(0, red(segment.col) - 5), 
-                          max(0, green(segment.col) - 5), 
-                          max(0, blue(segment.col) - 5));
-      // Stop fading if color becomes very dull
-      if (red(segment.col) <= 50 && green(segment.col) <= 50 && blue(segment.col) <= 50) {
-        segment.isFading = false; // Stop fading when it gets too dull
-      }
-    }
+    // Decrease color brightness gradually
+    int r = max(0, (segment[4] >> 16) & 0xFF - fadeAmount);
+    int g = max(0, (segment[4] >> 8) & 0xFF - fadeAmount);
+    int b = max(0, (segment[4]) & 0xFF - fadeAmount);
+    
+    // Update color
+    segment[4] = color(r, g, b);
+    
+    stroke(segment[4]); // Use the updated color
+    line(segment[0], segment[1], segment[2], segment[3]);
   }
 }
 
 void mousePressed() {
-  // Create a new lightning bolt with a random color
-  int startX = 0;  
-  int startY = 150;
-  int endX = startX;
-  int endY = startY;
-
-  // Generate a new random color
-  color lightningColor = color((int)random(255), (int)random(255), (int)random(255));
-
+  // Reset startX, startY, endX, and endY to original values
+  startX = 0;
+  startY = 150;
+  endX = 0;
+  endY = 150;
+  
+  // Generate a new random color for the lightning
+  int lightningColor = color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
+  
   // Create a zig-zag pattern for the new lightning bolt
-  while (endX < width) { // Repeat until endX is off the screen
-    int segmentX = (int)random(0, lightningLength); // Random segment length
-    int segmentY = (int)random(-5, 6); // Small random variation in Y direction
-    endX += segmentX; // Move in X direction
-    endY += segmentY; // Move in Y direction
-    // Add the new segment to the list
-    lightningSegments.add(new LightningSegment(lightningColor, startX, startY, endX, endY));
+  segmentCount = 0; // Reset segment count
+  while (endX < width && segmentCount < lightningSegments.length) { // Repeat until endX is off the screen
+    endX = startX + (int)(Math.random() * 10); // Random length from 0 to 9
+    endY = startY + (int)(Math.random() * 19) - 9; // Random variation from -9 to 9
+    
+    // Store the new segment
+    lightningSegments[segmentCount][0] = startX; // startX
+    lightningSegments[segmentCount][1] = startY; // startY
+    lightningSegments[segmentCount][2] = endX;   // endX
+    lightningSegments[segmentCount][3] = endY;   // endY
+    lightningSegments[segmentCount][4] = lightningColor; // color
+    
+    segmentCount++; // Increment the segment count
+    startX = endX; // Update startX
+    startY = endY; // Update startY
+  }
+}
+int startX = 0;
+int startY = 150;
+int endX = 0;
+int endY = 150;
+int[][] lightningSegments = new int[100][5]; // Store segments: {startX, startY, endX, endY, color}
+int segmentCount = 0;
+int fadeAmount = 5; // Amount to fade the color
+
+void setup() {
+  size(800, 400);         // Set the size of the window
+  strokeWeight(2);       // Set the stroke weight for drawing
+  background(0);         // Set the background color to black
+}
+
+void draw() {
+  // Clear the previous frame slightly
+  fill(0, 10); // Slightly transparent fill to create a fade effect
+  noStroke();
+  rect(0, 0, width, height); // Cover the entire window
+
+  // Draw all lightning segments
+  for (int i = 0; i < segmentCount; i++) {
+    int[] segment = lightningSegments[i];
+    
+    // Decrease color brightness gradually
+    int r = max(0, (segment[4] >> 16) & 0xFF - fadeAmount);
+    int g = max(0, (segment[4] >> 8) & 0xFF - fadeAmount);
+    int b = max(0, (segment[4]) & 0xFF - fadeAmount);
+    
+    // Update color
+    segment[4] = color(r, g, b);
+    
+    stroke(segment[4]); // Use the updated color
+    line(segment[0], segment[1], segment[2], segment[3]);
+  }
+}
+
+void mousePressed() {
+  // Reset startX, startY, endX, and endY to original values
+  startX = 0;
+  startY = 150;
+  endX = 0;
+  endY = 150;
+  
+  // Generate a new random color for the lightning
+  int lightningColor = color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
+  
+  // Create a zig-zag pattern for the new lightning bolt
+  segmentCount = 0; // Reset segment count
+  while (endX < width && segmentCount < lightningSegments.length) { // Repeat until endX is off the screen
+    endX = startX + (int)(Math.random() * 10); // Random length from 0 to 9
+    endY = startY + (int)(Math.random() * 19) - 9; // Random variation from -9 to 9
+    
+    // Store the new segment
+    lightningSegments[segmentCount][0] = startX; // startX
+    lightningSegments[segmentCount][1] = startY; // startY
+    lightningSegments[segmentCount][2] = endX;   // endX
+    lightningSegments[segmentCount][3] = endY;   // endY
+    lightningSegments[segmentCount][4] = lightningColor; // color
+    
+    segmentCount++; // Increment the segment count
     startX = endX; // Update startX
     startY = endY; // Update startY
   }
